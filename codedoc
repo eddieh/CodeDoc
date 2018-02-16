@@ -1,0 +1,47 @@
+#!/bin/sh
+
+usage () {
+    echo "Usage: $0 [-o outputdir] input [input2] [inputN]" 1>&2
+    exit 1
+}
+
+while getopts ":o:" opt; do
+    case $opt in
+        o)
+            output_dir=${OPTARG}
+            ;;
+        \?)
+            usage
+            ;;
+    esac
+done
+
+function main () {
+    if [ -n "$output_dir" ]; then
+        if [ ${#@} -gt 0 ]; then
+            process_input $@
+        else
+            # no arguments to script
+            echo "input must be provided"
+            exit
+        fi
+    else
+        echo "output directory must be provided"
+        exit 1
+    fi
+}
+
+tmp_output_dir=tmp
+
+# validate params
+
+function process_input() {
+    # run headerdoc
+    headerdoc2html -X -o $tmp_output_dir $@
+
+    # then process $tmp_output_dir with xsltproc
+
+    # xsltproc -o index.html xslt/headerdoc2html5.xslt docs/JSContext_h/JSContext.h.xml
+}
+
+main $@
