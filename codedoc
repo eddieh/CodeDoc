@@ -32,16 +32,33 @@ function main () {
 }
 
 tmp_output_dir=tmp
+style=xslt/headerdoc2html5.xslt
 
 # validate params
 
 function process_input() {
+    echo $output_dir
+    echo $tmp_output_dir
+    shift 2
+    echo $@
+
     # run headerdoc
     headerdoc2html -X -o $tmp_output_dir $@
 
     # then process $tmp_output_dir with xsltproc
+    for dir in `find ${tmp_output_dir} -depth 1 -type d`; do
+        echo "${dir}"
+        for xmldoc in "${dir}/*.xml"; do
+            echo $xmldoc
+            docdir="$(dirname ${xmldoc})"
+            docdir="${output_dir}${docdir#tmp}"
+            htmldoc="$(basename ${xmldoc} .xml).html"
 
-    # xsltproc -o index.html xslt/headerdoc2html5.xslt docs/JSContext_h/JSContext.h.xml
+            mkdir -p "${docdir}"
+            xsltproc --nonet -o "${docdir}/${htmldoc}" "${style}" $xmldoc
+        done
+        echo ""
+    done
 }
 
 main $@
